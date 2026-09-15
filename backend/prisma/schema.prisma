@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   @default("implementation")
+  status      String   @default("active")
+  clientName  String?  @map("client_name")
+  startDate   DateTime? @map("start_date")
+  targetDate  DateTime? @map("target_date")
+  sourceTool  String   @default("manual") @map("source_tool")
+  externalId  String?  @map("external_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tasks       Task[]
+  blockers    Blocker[]
+  risks       Risk[]
+  decisions   Decision[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  title       String
+  description String?
+  status      String   @default("todo")
+  priority    String   @default("normal")
+  assignee    String?
+  reporter    String?
+  storyPoints Int?     @map("story_points")
+  dueDate     DateTime? @map("due_date")
+  completedAt DateTime? @map("completed_at")
+  sourceTool  String   @default("manual") @map("source_tool")
+  externalId  String?  @map("external_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  blockers    Blocker[]
+
+  @@map("tasks")
+}
+
+model TeamMember {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  role       String?
+  department String?
+  teamType   String   @default("functional") @map("team_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("team_members")
+}
+
+model DailyLog {
+  id              String   @id @default(cuid())
+  date            DateTime
+  tasksCompleted  Int      @default(0) @map("tasks_completed")
+  tasksInProgress Int      @default(0) @map("tasks_in_progress")
+  tasksBlocked    Int      @default(0) @map("tasks_blocked")
+  notes           String?
+  aiSummary       String?  @map("ai_summary")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([date])
+  @@map("daily_logs")
+}
+
+model Blocker {
+  id           String    @id @default(cuid())
+  taskId       String?   @map("task_id")
+  projectId    String    @map("project_id")
+  description  String
+  severity     String    @default("medium")
+  assignedTo   String?   @map("assigned_to")
+  raisedDate   DateTime  @default(now()) @map("raised_date")
+  resolvedDate DateTime? @map("resolved_date")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  task         Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("blockers")
+}
+
+model SyncConfig {
+  id          String   @id @default(cuid())
+  sourceTool  String   @unique @map("source_tool")
+  config      String   @default("{}")
+  lastSyncAt  DateTime? @map("last_sync_at")
+  status      String   @default("disconnected")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("sync_configs")
+}
+
+model AIAction {
+  id         String   @id @default(cuid())
+  actionType String   @map("action_type")
+  context    String?
+  suggestion String
+  status     String   @default("pending")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("ai_actions")
+}
+
+model Decision {
+  id          String   @id @default(cuid())
+  decision    String
+  rationale   String?
+  projectId   String?  @map("project_id")
+  date        DateTime @default(now())
+  outcome     String?
+  aiSuggested Boolean  @default(false) @map("ai_suggested")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("decisions")
+}
+
+model MeetingNote {
+  id          String   @id @default(cuid())
+  title       String
+  date        DateTime @default(now())
+  attendees   String   @default("[]")
+  rawNotes    String   @map("raw_notes")
+  aiSummary   String?  @map("ai_summary")
+  actionItems String   @default("[]") @map("action_items")
+  followUps   String   @default("[]") @map("follow_ups")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("meeting_notes")
+}
+
+model Risk {
+  id             String   @id @default(cuid())
+  projectId      String   @map("project_id")
+  description    String
+  probability    String   @default("medium")
+  impact         String   @default("medium")
+  mitigation     String?
+  status         String   @default("open")
+  identifiedBy   String?  @map("identified_by")
+  identifiedDate DateTime @default(now()) @map("identified_date")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("risks")
+}
