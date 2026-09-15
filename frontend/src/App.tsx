@@ -12,6 +12,8 @@ import Communication from "@/pages/Communication";
 import MeetingNotes from "@/pages/MeetingNotes";
 import Retrospective from "@/pages/Retrospective";
 import Settings from "@/pages/Settings";
+import Projects from "@/pages/Projects";
+import DailyLog from "@/pages/DailyLog";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -29,13 +31,15 @@ function AppRoutes() {
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
-        <Route path="ai-copilot" element={<AICopilot />} />
+        <Route path="projects" element={<Projects />} />
         <Route path="progress" element={<ProgressHub />} />
+        <Route path="daily-log" element={<DailyLog />} />
+        <Route path="ai-copilot" element={<AICopilot />} />
         <Route path="tasks" element={<AITaskCreator />} />
+        <Route path="meetings" element={<MeetingNotes />} />
         <Route path="team" element={<TeamWorkload />} />
         <Route path="risks" element={<RiskRegister />} />
         <Route path="communication" element={<Communication />} />
-        <Route path="meetings" element={<MeetingNotes />} />
         <Route path="retro" element={<Retrospective />} />
         <Route path="settings" element={<Settings />} />
       </Route>

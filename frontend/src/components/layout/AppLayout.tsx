@@ -3,8 +3,10 @@ import Sidebar from "./Sidebar";
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
+  "/projects": "Projects",
   "/ai-copilot": "AI Co-Pilot",
   "/progress": "Progress Hub",
+  "/daily-log": "Daily Log",
   "/tasks": "AI Task Creator",
   "/team": "Team Workload",
   "/risks": "Risk Register",

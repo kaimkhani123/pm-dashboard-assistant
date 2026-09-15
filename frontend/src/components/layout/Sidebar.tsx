@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Brain, BarChart3, ListTodo, Users, AlertTriangle,
-  Mail, FileText, RotateCcw, Settings, LogOut, Zap, ChevronRight
+  Mail, FileText, RotateCcw, Settings, LogOut, Zap, ChevronRight,
+  FolderKanban, CalendarDays
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,9 @@ const sections = [
     title: "Overview",
     links: [
       { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/projects", icon: FolderKanban, label: "Projects" },
       { to: "/progress", icon: BarChart3, label: "Progress Hub" },
+      { to: "/daily-log", icon: CalendarDays, label: "Daily Log" },
     ],
   },
   {

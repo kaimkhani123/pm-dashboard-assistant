@@ -21,8 +21,8 @@ export default function MeetingNotes() {
     if (!rawNotes.trim()) return;
     setExtracting(true);
     try {
-      const res = await api.post("/ai/meeting-actions", { notes: rawNotes });
-      setActions(res.actions || []);
+      const res = await api.post("/ai/meeting-actions", { notes: rawNotes, title: meetingTitle });
+      setActions(res.extracted?.actionItems || res.actions || []);
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {

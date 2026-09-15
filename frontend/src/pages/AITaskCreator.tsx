@@ -51,8 +51,7 @@ export default function AITaskCreator() {
     setSaving(true);
     try {
       await api.post("/tasks/bulk", {
-        projectId: selectedProject,
-        tasks: tasks.map((t) => ({ title: t.title, description: t.description, priority: t.priority.toUpperCase(), estimatedHours: t.estimatedHours })),
+        tasks: tasks.map((t) => ({ title: t.title, description: t.description, projectId: selectedProject, priority: t.priority.toUpperCase(), estimatedHours: t.estimatedHours })),
       });
       setTasks([]);
       setPrompt("");

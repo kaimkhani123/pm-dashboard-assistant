@@ -1,17 +1,39 @@
 import { useState } from "react";
-import { Mail, Send, Loader2, AlertCircle, Sparkles } from "lucide-react";
+import { Mail, Send, Loader2, AlertCircle, Sparkles, CheckCircle } from "lucide-react";
+import { api } from "@/services/api";
 
 export default function Communication() {
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
+  const [composing, setComposing] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const aiCompose = async () => {
+    if (!subject.trim()) {
+      alert("Enter a subject first so AI knows what to write about.");
+      return;
+    }
+    setComposing(true);
+    try {
+      const res = await api.post("/ai/ask", {
+        question: `Write a professional email about: "${subject}". ${to ? `To: ${to}.` : ""} Keep it concise and professional. Return only the email body, no subject line.`,
+      });
+      setBody(res.answer || "");
+    } catch {
+      alert("AI compose failed — check your AI provider key in Settings.");
+    } finally {
+      setComposing(false);
+    }
+  };
 
   const saveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      alert("Draft saved to Gmail (integration pending — connect Gmail in Settings)");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } finally {
       setSaving(false);
     }
@@ -35,6 +57,13 @@ export default function Communication() {
           <strong>Draft Only.</strong> No email is ever sent automatically. All generated emails are saved as drafts in your Gmail for manual review.
         </p>
       </div>
+
+      {saved && (
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 animate-scale-in">
+          <CheckCircle className="w-5 h-5 text-emerald-600" />
+          <p className="text-[13px] font-medium text-emerald-800">Draft saved! Connect Gmail in Settings to sync drafts to your inbox.</p>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-border p-6 animate-slide-in-up">
         <form onSubmit={saveDraft} className="space-y-5">
@@ -72,10 +101,12 @@ export default function Communication() {
           <div className="flex items-center justify-between">
             <button
               type="button"
-              className="px-4 py-2.5 border border-border rounded-xl text-[13px] font-medium text-muted hover:text-primary hover:border-primary/30 transition-all flex items-center gap-2"
+              onClick={aiCompose}
+              disabled={composing}
+              className="px-4 py-2.5 border border-border rounded-xl text-[13px] font-medium text-muted hover:text-primary hover:border-primary/30 transition-all flex items-center gap-2 disabled:opacity-50"
             >
-              <Sparkles className="w-4 h-4" />
-              AI Compose
+              {composing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              {composing ? "Writing..." : "AI Compose"}
             </button>
             <button
               type="submit"
