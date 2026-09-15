@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/services/api";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, TrendingUp, Plus, CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface WeeklyData {
   weekStart: string;
@@ -16,44 +17,72 @@ export default function ProgressHub() {
     api.get("/dashboard/weekly").then(setData).catch(console.error);
   }, []);
 
-  if (!data) return <div className="flex items-center justify-center h-64 text-muted">Loading...</div>;
+  if (!data) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <div className="skeleton h-20 rounded-2xl" />
+        <div className="grid grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-28 rounded-2xl" />)}
+        </div>
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: "Completed", value: data.summary.completed, icon: CheckCircle, gradient: "from-emerald-500 to-emerald-600", bg: "bg-emerald-50", text: "text-emerald-600" },
+    { label: "New Tasks", value: data.summary.added, icon: Plus, gradient: "from-indigo-500 to-indigo-600", bg: "bg-indigo-50", text: "text-indigo-600" },
+    { label: "In Progress", value: data.summary.inProgress, icon: TrendingUp, gradient: "from-amber-500 to-orange-500", bg: "bg-amber-50", text: "text-amber-600" },
+  ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold flex items-center gap-2">
-        <BarChart3 className="w-6 h-6 text-primary" />
-        Weekly Progress
-      </h1>
-      <p className="text-sm text-muted">{data.weekStart} — {data.weekEnd}</p>
+    <div className="space-y-6 max-w-4xl">
+      <div className="flex items-center justify-between animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">Weekly Progress</h1>
+            <p className="text-[13px] text-muted">{data.weekStart} — {data.weekEnd}</p>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Completed", value: data.summary.completed, color: "text-success" },
-          { label: "New Tasks", value: data.summary.added, color: "text-primary" },
-          { label: "In Progress", value: data.summary.inProgress, color: "text-warning" },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl border border-border p-4 text-center">
-            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-muted mt-1">{s.label}</p>
+      <div className="grid grid-cols-3 gap-4 stagger-children">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-white rounded-2xl border border-border p-5 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 transition-all duration-300">
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-3", s.bg)}>
+              <s.icon className={cn("w-5 h-5", s.text)} />
+            </div>
+            <p className="text-3xl font-bold tabular-nums">{s.value}</p>
+            <p className="text-[12px] text-muted font-medium mt-1">{s.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-border p-5">
-        <h2 className="font-semibold mb-4">Completed This Week</h2>
-        <div className="space-y-4">
-          {data.completedByProject.length === 0 && <p className="text-sm text-muted">No completed tasks this week</p>}
+      <div className="bg-white rounded-2xl border border-border p-6 animate-slide-in-up">
+        <h2 className="font-bold text-[15px] mb-5 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-success" />
+          Completed This Week
+        </h2>
+        <div className="space-y-5">
+          {data.completedByProject.length === 0 && (
+            <div className="text-center py-8">
+              <BarChart3 className="w-8 h-8 text-muted mx-auto mb-2 opacity-40" />
+              <p className="text-[13px] text-muted">No completed tasks this week</p>
+            </div>
+          )}
           {data.completedByProject.map((p) => (
             <div key={p.projectName}>
-              <h3 className="text-sm font-medium text-primary mb-2">{p.projectName}</h3>
-              <ul className="space-y-1 pl-4">
+              <h3 className="text-[13px] font-bold text-primary mb-2">{p.projectName}</h3>
+              <div className="space-y-1.5 pl-4">
                 {p.tasks.map((t, i) => (
-                  <li key={i} className="text-sm text-muted flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
-                    {t}
-                  </li>
+                  <div key={i} className="flex items-center gap-2.5 text-[13px]">
+                    <CheckCircle className="w-3.5 h-3.5 text-success shrink-0" />
+                    <span className="text-card-foreground">{t}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           ))}
         </div>
